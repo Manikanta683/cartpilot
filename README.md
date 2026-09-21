@@ -52,7 +52,26 @@ See `policy.yaml`. In short:
 _Keep a running log here — Razorpay explicitly scores an honest account of
 what broke and how you fixed it._
 
+- **The confirm loop (M2).** The "yes, pay" confirmation re-ran the policy gate,
+  which said "confirm" again — so the agent asked for confirmation forever.
+  A unit test (`test_mid_buy_asks_confirmation_then_completes`) caught it.
+  Fix: thread a `confirmed=True` flag through the second gate evaluation, so a
+  customer's explicit "yes" is honored instead of re-gated.
+- **Duplicate policy defaults (M4).** `DEFAULT_POLICY` ended up defined in both
+  `policy.py` and `agent.py` after a refactor. Caught on re-read before it could
+  drift. Fix: single source of truth in `policy.py`, imported everywhere else.
 - (add entries as you build)
+
+## Publishing to GitHub
+
+```bash
+# create an empty public repo on github.com first, then:
+git remote add origin git@github.com:<your-username>/cartpilot.git
+git branch -M main
+git push -u origin main
+```
+
+Never commit `.env` — it's gitignored. The demo runs on test-mode keys only.
 
 ## Submission
 
