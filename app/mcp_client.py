@@ -11,7 +11,8 @@ Tools we care about: create_order, fetch_order, fetch_order_payments,
 create_payment_link, fetch_payment_link, create_refund.
 
 M1 acceptance: scripts/create_test_link.py hits the REST API directly to prove
-the test keys work. M3 wires the agent below to the MCP tools.
+the test keys work. M3 wires the agent to these MCP tools via claude-agent-sdk
+(verified on PyPI, 0.2.157).
 """
 import base64
 import os

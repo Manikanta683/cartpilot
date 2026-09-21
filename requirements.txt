@@ -4,5 +4,5 @@ httpx
 pyyaml
 pytest
 anthropic
-# Claude Agent SDK: verify package name/availability before M3, see app/mcp_client.py
-# claude-agent-sdk
+# Claude Agent SDK (verified on PyPI, latest 0.2.157) — wired in M3
+claude-agent-sdk
