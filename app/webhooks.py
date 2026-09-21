@@ -12,7 +12,7 @@ import hashlib
 import hmac
 import json
 
-from . import config, db as database
+from . import config, db as database, recovery
 
 
 def verify_signature(body: bytes, signature: str, secret: str) -> bool:
@@ -37,9 +37,8 @@ def handle(body: bytes, signature: str, db_path: str):
     )
 
     if etype == "payment.failed":
-        # TODO M4: recovery loop — count nudges, check policy, nudge once.
-        database.log_audit(
-            db_path, "-", "recovery", "payment_failed_seen",
-            "{}", "M4: trigger recovery nudge here", "pending",
-        )
+        entity = event.get("payload", {}).get("payment", {}).get("entity", {})
+        order_ref = entity.get("order_id") or entity.get("id") or "unknown"
+        result = recovery.handle_failure(db_path, "-", order_ref, reason="payment_failed")
+        return {"ok": True, "event": etype, "recovery": result}
     return {"ok": True, "event": etype}

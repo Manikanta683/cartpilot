@@ -18,6 +18,7 @@ import json
 import re
 
 from . import config, db as database, policy as policy_mod
+from .policy import DEFAULT_POLICY
 
 SYSTEM_PROMPT = """You are CartPilot, the shopping assistant for DemoKart, a small
 Indian online store. Rules you must never break:
@@ -35,13 +36,6 @@ Indian online store. Rules you must never break:
    then offer exactly one recovery option (retry or a cheaper alternative).
 6. Be warm, brief, and concrete. No filler, no emoji spam.
 """
-
-DEFAULT_POLICY = {
-    "auto_approve_below_paise": 50000,
-    "confirm_below_paise": 500000,
-    "allowed_money_actions": ["create_order", "create_payment_link"],
-    "max_recovery_nudges": 2,
-}
 
 BUY_RE = re.compile(r"\b(buy|checkout|pay|payment link|order it|place order|get it)\b", re.I)
 YES_RE = re.compile(r"^\s*(yes|yep|confirm|pay now|do it|ok pay)\b", re.I)

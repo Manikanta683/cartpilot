@@ -42,6 +42,16 @@ CREATE TABLE IF NOT EXISTS orders(
     payment_link TEXT,
     created_at TEXT
 );
+CREATE TABLE IF NOT EXISTS recoveries(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_ref TEXT UNIQUE,
+    session_id TEXT,
+    reason TEXT,
+    nudges_sent INTEGER DEFAULT 0,
+    status TEXT DEFAULT 'open',
+    created_at TEXT,
+    updated_at TEXT
+);
 """
 
 
@@ -126,5 +136,51 @@ def record_order(path, session_id, rzp_order_id, amount_paise, status, payment_l
 def get_orders(path):
     con = _conn(path)
     rows = con.execute("SELECT * FROM orders ORDER BY id DESC").fetchall()
+    con.close()
+    return [dict(r) for r in rows]
+
+
+def get_or_create_recovery(path, order_ref, session_id, reason):
+    con = _conn(path)
+    row = con.execute("SELECT * FROM recoveries WHERE order_ref=?", (order_ref,)).fetchone()
+    if row:
+        con.close()
+        return dict(row)
+    cur = con.execute(
+        "INSERT INTO recoveries(order_ref, session_id, reason, nudges_sent, status, created_at, updated_at)"
+        " VALUES (?,?,?,?,?,?,?)",
+        (order_ref, session_id, reason, 0, "open", now(), now()),
+    )
+    rid = cur.lastrowid
+    con.commit()
+    row = con.execute("SELECT * FROM recoveries WHERE id=?", (rid,)).fetchone()
+    con.close()
+    return dict(row)
+
+
+def record_nudge(path, rid):
+    con = _conn(path)
+    con.execute(
+        "UPDATE recoveries SET nudges_sent=nudges_sent+1, updated_at=? WHERE id=?",
+        (now(), rid),
+    )
+    n = con.execute("SELECT nudges_sent FROM recoveries WHERE id=?", (rid,)).fetchone()["nudges_sent"]
+    con.commit()
+    con.close()
+    return n
+
+
+def set_recovery_status(path, rid, status):
+    con = _conn(path)
+    con.execute(
+        "UPDATE recoveries SET status=?, updated_at=? WHERE id=?", (status, now(), rid)
+    )
+    con.commit()
+    con.close()
+
+
+def get_recoveries(path):
+    con = _conn(path)
+    rows = con.execute("SELECT * FROM recoveries ORDER BY id DESC").fetchall()
     con.close()
     return [dict(r) for r in rows]

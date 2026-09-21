@@ -21,6 +21,11 @@
 <main><table>
   <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Reason</th><th>Result</th></tr></thead>
   <tbody id="rows"><tr><td colspan="5">Loading…</td></tr></tbody>
+</table>
+<h2 style="margin-top:28px">Recovery cases</h2>
+<table>
+  <thead><tr><th>Order</th><th>Reason</th><th>Nudges</th><th>Status</th><th>Updated</th></tr></thead>
+  <tbody id="recrows"><tr><td colspan="5">Loading…</td></tr></tbody>
 </table></main>
 <script>
 async function load() {
@@ -29,6 +34,11 @@ async function load() {
   document.getElementById('rows').innerHTML = data.audit.map(a =>
     `<tr><td><code>${a.created_at}</code></td><td>${a.actor}</td><td><code>${a.action}</code></td><td>${a.reason || ''}</td><td>${a.result || ''}</td></tr>`
   ).join('') || '<tr><td colspan="5">No actions yet — chat in the widget first.</td></tr>';
+  const r2 = await fetch('/api/recoveries');
+  const d2 = await r2.json();
+  document.getElementById('recrows').innerHTML = d2.recoveries.map(r =>
+    `<tr><td><code>${r.order_ref}</code></td><td>${r.reason}</td><td>${r.nudges_sent}</td><td><span class="pill">${r.status}</span></td><td><code>${r.updated_at}</code></td></tr>`
+  ).join('') || '<tr><td colspan="5">No recovery cases yet.</td></tr>';
 }
 load(); setInterval(load, 3000);
 </script>

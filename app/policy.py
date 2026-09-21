@@ -47,3 +47,12 @@ def evaluate(action, amount_paise, policy, nudges_used=0):
         "decision": "deny",
         "reason": f"₹{rupees:,.0f} exceeds the ₹{confirm_below / 100:,.0f} agent limit — escalate to human",
     }
+
+
+# Fallback when policy.yaml can't be loaded (e.g. unit tests).
+DEFAULT_POLICY = {
+    "auto_approve_below_paise": 50000,
+    "confirm_below_paise": 500000,
+    "allowed_money_actions": ["create_order", "create_payment_link"],
+    "max_recovery_nudges": 2,
+}

@@ -4,7 +4,7 @@ import uuid
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 
-from . import agent, config, db as database, webhooks
+from . import agent, config, db as database, recovery, webhooks
 
 app = FastAPI(title="CartPilot")
 database.init_db(config.DB_PATH)
@@ -45,6 +45,23 @@ async def razorpay_webhook(request: Request):
     body = await request.body()
     sig = request.headers.get("X-Razorpay-Signature", "")
     return webhooks.handle(body, sig, config.DB_PATH)
+
+
+@app.post("/api/recoveries/trigger")
+def trigger_recovery(payload: dict):
+    """Demo helper: simulate a failed payment without a real webhook.
+    Body: {"order_ref": "...", "session_id": "...", "reason": "payment_failed"}"""
+    return recovery.handle_failure(
+        config.DB_PATH,
+        payload.get("session_id", "-"),
+        payload.get("order_ref", "demo-order"),
+        payload.get("reason", "payment_failed"),
+    )
+
+
+@app.get("/api/recoveries")
+def recoveries():
+    return {"recoveries": database.get_recoveries(config.DB_PATH)}
 
 
 app.mount("/widget", StaticFiles(directory="widget", html=True), name="widget")
