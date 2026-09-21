@@ -1,0 +1,18 @@
+# Money-action gating policy.
+# Amounts are in paise. The agent may never exceed these bounds.
+
+# At or below this: agent may act, but must show a visible "action taken" banner.
+auto_approve_below_paise: 50000      # ₹500
+
+# Above auto-approve, at or below this: require explicit "yes, pay" in chat.
+confirm_below_paise: 500000          # ₹5000
+
+# Above confirm_below_paise: deny and escalate to a human.
+
+# Actions the agent is allowed to take at all.
+allowed_money_actions:
+  - create_order
+  - create_payment_link
+
+# Recovery loop bounds.
+max_recovery_nudges: 2

@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+httpx
+pyyaml
+pytest
+anthropic
+# Claude Agent SDK: verify package name/availability before M3, see app/mcp_client.py
+# claude-agent-sdk

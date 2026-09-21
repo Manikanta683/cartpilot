@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CartPilot — Merchant dashboard</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; background: #f6f7fb; }
+  header { background: #0f2540; color: #fff; padding: 18px 24px; }
+  header h1 { margin: 0; font-size: 20px; }
+  main { padding: 24px; max-width: 1100px; margin: auto; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; font-size: 13px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #eee; vertical-align: top; }
+  th { background: #eef1f6; }
+  code { background: #f1f2f6; padding: 1px 5px; border-radius: 4px; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 12px; }
+  .auto { background: #e6f7e6; } .confirm { background: #fff4d6; } .deny { background: #ffe1e1; }
+</style>
+</head>
+<body>
+<header><h1>CartPilot — audit trail</h1><p style="margin:4px 0 0;font-size:13px;opacity:.8">Every agent action, explainable. Auto-refreshes.</p></header>
+<main><table>
+  <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Reason</th><th>Result</th></tr></thead>
+  <tbody id="rows"><tr><td colspan="5">Loading…</td></tr></tbody>
+</table></main>
+<script>
+async function load() {
+  const res = await fetch('/api/audit?limit=100');
+  const data = await res.json();
+  document.getElementById('rows').innerHTML = data.audit.map(a =>
+    `<tr><td><code>${a.created_at}</code></td><td>${a.actor}</td><td><code>${a.action}</code></td><td>${a.reason || ''}</td><td>${a.result || ''}</td></tr>`
+  ).join('') || '<tr><td colspan="5">No actions yet — chat in the widget first.</td></tr>';
+}
+load(); setInterval(load, 3000);
+</script>
+</body>
+</html>
