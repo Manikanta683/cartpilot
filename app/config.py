@@ -8,3 +8,9 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 DB_PATH = os.getenv("CARTPILOT_DB", "cartpilot.db")
 STUB_MODE = os.getenv("CARTPILOT_STUB", "true").lower() == "true"
 POLICY_PATH = os.getenv("CARTPILOT_POLICY", "policy.yaml")
+# Brain: "stub" (deterministic demo, default) or "claude" (real agent via
+# claude-agent-sdk; needs ANTHROPIC_API_KEY + Claude Code CLI).
+BRAIN = os.getenv("CARTPILOT_BRAIN", "stub").lower()
+# Backend: "mock" (in-memory, default) or "razorpay" (real test-mode REST).
+BACKEND = os.getenv("CARTPILOT_BACKEND", "mock").lower()
+MODEL = os.getenv("CARTPILOT_MODEL", "")  # optional Claude model override

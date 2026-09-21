@@ -46,30 +46,33 @@ Python 3.11, FastAPI, Anthropic Claude Agent SDK, Razorpay MCP server (remote,
 test-mode keys), SQLite, vanilla JS chat widget + dashboard, Render/Railway for
 hosting, Loom for the pitch video.
 
-## Milestones
+## Milestones — status 2026-09-21
 
-**M1 — Wired up (days 1–2).** Repo skeleton, FastAPI app, Razorpay test account
-with test keys, MCP connection proven.
+**M1 — Wired up.** ✅ Repo skeleton, FastAPI app, mock backend live; real
+test-mode keys still needed for the live acceptance run
+(`python scripts/create_test_link.py`).
 *Done when:* a script creates a real test-mode payment link end to end.
 
-**M2 — The salesperson (days 3–5).** Product catalog (SQLite), recommendation +
-upsell prompting, working chat UI.
+**M2 — The salesperson.** ✅ Catalog (SQLite), recommendation + one upsell,
+working chat widget. 12 tests green.
 *Done when:* "birthday gift under ₹2000" returns 3 catalog picks plus an upsell.
 
-**M3 — Money moves (days 6–8).** Agent creates orders/payment links through the
-MCP tools, approval gate enforced, checkout completes in test mode.
+**M3 — Money moves.** ✅ Real Claude agent via **claude-agent-sdk** with
+in-process MCP tools (`search_catalog`, `check_policy`, `create_payment_link`,
+`confirm_payment`); money gate enforced inside the tools. Live run needs
+`ANTHROPIC_API_KEY` + Claude Code CLI (+ `rzp_test_` keys for real payments).
 *Done when:* full chat → test payment → `order.paid` recorded in the dashboard.
 
-**M4 — The recovery loop (days 9–11).** Webhook receiver, abandoned/failed
-detection, nudge + retry flow, audit-trail dashboard.
+**M4 — The recovery loop.** ✅ Webhook receiver, per-order cases, max 2
+policy-capped nudges then stop, dashboard recovery section. 15 tests green.
 *Done when:* a failed test payment triggers an agent nudge and the recovery shows
 on the dashboard.
 
-**M5 — Harden + ship (days 12–14).** Failure demos, retry bounds, README,
-architecture doc, demo rehearsal.
+**M5 — Harden + ship.** ✅ `scripts/demo.py` (zero-setup full loop),
+ARCHITECTURE.md, DEMO_CHECKLIST.md, "what broke" log, publishing guide.
 *Done when:* a stranger can clone the repo and run the demo in under 10 minutes.
 
-**M6 — Submit.** 5-minute video recorded, repo public, AI Builders form submitted
+**M6 — Submit.** ⏳ 5-minute video recorded, repo public, AI Builders form submitted
 with repo + video links.
 
 ## The 5-minute video script

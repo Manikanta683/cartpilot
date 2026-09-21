@@ -184,3 +184,13 @@ def get_recoveries(path):
     rows = con.execute("SELECT * FROM recoveries ORDER BY id DESC").fetchall()
     con.close()
     return [dict(r) for r in rows]
+
+
+def get_messages(path, session_id, limit=20):
+    con = _conn(path)
+    rows = con.execute(
+        "SELECT role, content FROM messages WHERE session_id=? ORDER BY id DESC LIMIT ?",
+        (session_id, limit),
+    ).fetchall()
+    con.close()
+    return [dict(r) for r in reversed(rows)]

@@ -8,32 +8,49 @@ with a full audit trail.
 Built for the **Razorpay AI Builders** program
 (Track 01: AI Growth & Agentic Commerce).
 
-## Quickstart
+## Quickstart (zero setup — no keys needed)
+
+The default stack — deterministic stub brain + in-memory mock payments — runs
+the whole sell → gate → recover loop out of the box:
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env        # fill in your Razorpay TEST keys + Anthropic key
 python scripts/seed.py      # seed the demo catalog
 uvicorn app.main:app --reload
+# or run the scripted end-to-end demo: python scripts/demo.py
 ```
 
 - Chat widget (demo store): http://localhost:8000/widget/
 - Merchant dashboard (audit trail): http://localhost:8000/dashboard/
 - Health check: http://localhost:8000/health
 
-The agent runs in **stub mode** by default (`CARTPILOT_STUB=true`) so the widget
-works before any API keys are wired. M3 wires the real agent.
+## Brains & backends
+
+| | Stub (default) | Real |
+|---|---|---|
+| **Brain** (`CARTPILOT_BRAIN`) | `stub` — deterministic demo agent | `claude` — real Claude agent via **claude-agent-sdk**, in-process MCP tools. Needs `ANTHROPIC_API_KEY` + Claude Code CLI (`npm i -g @anthropic-ai/claude-code`) |
+| **Payments** (`CARTPILOT_BACKEND`) | `mock` — in-memory, Razorpay-shaped responses | `razorpay` — real test-mode REST calls. Needs `rzp_test_` keys in `.env` |
+
+Mix freely: `stub`+`mock` for zero-setup demos, `claude`+`mock` to try the real
+agent without touching money, `stub`+`razorpay` or `claude`+`razorpay` for the
+full real thing. Mock payment URLs are clearly fake (`rzp.io/mock/…`) — nobody
+can mistake them for real charges.
+
+Money-gating is enforced **inside the tool implementations**
+(`policy.evaluate` + audit log) — never left to the model or the SDK.
 
 ## Layout
 
 ```
-app/            FastAPI backend: chat API, policy gate, webhooks, agent
+app/            FastAPI backend: chat API, policy gate, webhooks, agent,
+                backends (mock Razorpay + real test-mode REST)
 widget/         embeddable customer chat widget (demo store page)
-dashboard/      merchant audit-trail dashboard
-scripts/        seed catalog, M1 acceptance test (create a test payment link)
-tests/          policy-gate unit tests
+dashboard/      merchant audit-trail + recovery dashboard
+scripts/        seed catalog, zero-setup demo, M1 acceptance test
+tests/          policy-gate, backend, recovery + agent-tool unit tests
 policy.yaml     money-action gating rules
+ARCHITECTURE.md component map and key flows
 BUILD_PLAN.md   full build plan, milestones, video script
 ```
 
