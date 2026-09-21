@@ -118,21 +118,12 @@ def _recommend(message, db_path, session_id):
     return "\n".join(lines)
 
 
-def _checkout(product, session_id, db_path, pol):
+def _checkout(product, session_id, db_path, pol, confirmed=False):
     amount = product["price_paise"]
     decision = policy_mod.evaluate("create_payment_link", amount, pol)
     args = {"product": product["name"], "amount_paise": amount}
 
-    if decision["decision"] == "auto":
-        database.record_order(db_path, session_id, f"stub_{session_id[:8]}",
-                              amount, "link_created", payment_link="(stub)")
-        _audit(db_path, session_id, "create_payment_link", args,
-               decision["reason"], "auto-approved")
-        return (f"✅ Action taken: payment link created for {product['name']} — "
-                f"₹{amount / 100:,.0f}.\n({decision['reason']})\n"
-                f"[stub mode — a real Razorpay link appears here in M3]")
-
-    if decision["decision"] == "confirm":
+    if decision["decision"] == "confirm" and not confirmed:
         _pending[session_id] = {"product": product}
         _audit(db_path, session_id, "policy_check", args,
                decision["reason"], "awaiting confirmation")
@@ -140,9 +131,20 @@ def _checkout(product, session_id, db_path, pol):
                 f"({decision['reason']})\n"
                 f"Reply **yes, pay** and I'll create the payment link.")
 
-    _audit(db_path, session_id, "policy_check", args, decision["reason"], "denied")
-    return (f"I can't take that payment myself — {decision['reason']}.\n"
-            f"Want me to get a human, or look at something cheaper?")
+    if decision["decision"] == "deny":
+        _audit(db_path, session_id, "policy_check", args, decision["reason"], "denied")
+        return (f"I can't take that payment myself — {decision['reason']}.\n"
+                f"Want me to get a human, or look at something cheaper?")
+
+    # auto, or confirm + customer already said yes
+    how = "auto-approved" if decision["decision"] == "auto" else "customer confirmed"
+    database.record_order(db_path, session_id, f"stub_{session_id[:8]}",
+                          amount, "link_created", payment_link="(stub)")
+    _audit(db_path, session_id, "create_payment_link", args,
+           decision["reason"], how)
+    return (f"✅ Action taken: payment link created for {product['name']} — "
+            f"₹{amount / 100:,.0f}.\n({decision['reason']}; {how})\n"
+            f"[stub mode — a real Razorpay link appears here in M3]")
 
 
 async def handle_message(session_id, message, db_path):
@@ -156,7 +158,7 @@ async def handle_message(session_id, message, db_path):
     if session_id in _pending:
         if YES_RE.match(msg):
             product = _pending.pop(session_id)["product"]
-            return _checkout(product, session_id, db_path, pol)
+            return _checkout(product, session_id, db_path, pol, confirmed=True)
         if CANCEL_RE.match(msg):
             _pending.pop(session_id)
             _audit(db_path, session_id, "cancel_pending", {}, "customer cancelled", "ok")
